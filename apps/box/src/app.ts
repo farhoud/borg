@@ -1,12 +1,11 @@
-import Libp2p, {constructorOptions, Libp2pOptions} from 'libp2p';
+import {Libp2p,Libp2pOptions} from 'libp2p';
 import * as IPFS from 'ipfs';
 import { resolveLater } from 'async-later';
 import debug from 'debug';
-import {registerFile} from "./file";
-import {libConfig, ipfsConfig} from "./config";
-import {registerGraph, getOrbitDb} from "./graph";
-import {IPFS_PATH, IPFS_HTTP} from "./const";
-import config from "config";
+import {registerFile} from "./file/index.js";
+import {libConfig, ipfsConfig} from "./config.js";
+import {registerGraph, getOrbitDb} from "./graph/index.js";
+import {IPFS_PATH, IPFS_HTTP} from "./const.js";
 import {create} from "ipfs-http-client";
 
 
@@ -18,12 +17,12 @@ export async function getLibp2p() {
   return libp2pPromise;
 }
 
-export async function getIPFS() {
+export async function getIPFS(): Promise<IPFS.IPFS> {
   return ipfsPromise;
 }
 
 async function createIPFS(createLibp2p){
-  if(IPFS_HTTP){
+  if(typeof IPFS_HTTP === "string" ){
     createLibp2p()
     const libp2pNode = await getLibp2p();
     await libp2pNode.start()
@@ -41,18 +40,17 @@ async function createIPFS(createLibp2p){
       // @ts-ignore
       libp2p: createLibp2p,
       repo: IPFS_PATH,
-      peerId: config?.peerId,
       config: ipfsConfig()
     })
   }
 }
 
 
-export async function app(config?:Partial<Libp2pOptions&constructorOptions>) {
+export async function app(config?:Partial<Libp2pOptions>) {
 
   const createLibp2p = async (config: Libp2pOptions) => {
     resolveLibp2p(
-      Libp2p.create(await libConfig(config))
+      createLibp2p(await libConfig(config))
     );
     return libp2pPromise;
   };
@@ -63,7 +61,7 @@ export async function app(config?:Partial<Libp2pOptions&constructorOptions>) {
 
   const libp2pNode = await getLibp2p();
   const ipfsNode = await getIPFS();
-  console.log('Box peerID: ' + libp2pNode.peerId.toB58String())
+  console.log('Box peerID: ' + libp2pNode.peerId.toString())
 
 
   registerFile(libp2pNode, ipfsNode)

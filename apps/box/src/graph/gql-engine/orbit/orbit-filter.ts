@@ -6,7 +6,7 @@ import {
     LogicalFilterKeys,
     FilterKeys,
     isLogical
-} from "../types";
+} from "../types.js";
 
 const evaluate = (leaf: FieldFilter) => {
     const partialFieldFilters = Object.entries(leaf)

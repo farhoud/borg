@@ -1,7 +1,7 @@
 import {execute, DocumentNode, OperationDefinitionNode} from 'graphql'
-import {Fields, IResolvers} from "./types";
-import {schema} from "./schema";
-import {Maybe} from "graphql/jsutils/Maybe";
+import {Fields, IResolvers} from "./types.js";
+import {schema} from "./schema.js";
+import {Maybe} from "graphql/jsutils/Maybe.js";
 
 export const getFields = (def: OperationDefinitionNode): Fields => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -55,7 +55,7 @@ export const executeAndSelect = async (
     if(res.errors){
         // @TODO handle error instantiation
         return {
-            error: res.errors[0]
+            error: res.errors[0].toString()
         }
     }
     const def = query.definitions[0]

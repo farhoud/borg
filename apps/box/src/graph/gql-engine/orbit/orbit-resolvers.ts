@@ -1,5 +1,5 @@
-import {_reGetFilter} from "./orbit-filter";
-import {CreateArgs, DeleteArgs, IResolvers, ReadArgs, UpdateArgs, UpdateQueryArgs} from "../types";
+import {_reGetFilter} from "./orbit-filter.js";
+import {CreateArgs, DeleteArgs, IResolvers, ReadArgs, UpdateArgs, UpdateQueryArgs} from "../types.js";
 
 
 export const createResolver = (orbitDB): IResolvers => {

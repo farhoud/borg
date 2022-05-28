@@ -1,25 +1,26 @@
-import GossipSub from "libp2p-gossipsub";
-import wrtc from 'wrtc';
-import WebRTCStar from 'libp2p-webrtc-star';
-import Mplex from 'libp2p-mplex';
+import {GossipSub} from "@chainsafe/libp2p-gossipsub";
+import wrtc from "wrtc";
+import {WebRTCStar} from "@libp2p/webrtc-star";
+import {Mplex} from '@libp2p/mplex'
 import {NOISE, Noise} from "@chainsafe/libp2p-noise"
-import Bootstrap  from "libp2p-bootstrap"
+import {Bootstrap} from "@libp2p/bootstrap"
 import {Libp2pOptions} from "libp2p";
-import Protector from "libp2p/src/pnet"
-import config from "config"
+import {PreSharedKeyConnectionProtector} from "libp2p/pnet"
+import * as config from "config"
 import * as fs from "fs"
-import peerId from "peer-id"
-import {LIBP2P_PATH, FULA_NODES, IPFS_HTTP} from "./const";
-import TCP from 'libp2p-tcp'
-import WS from 'libp2p-websockets'
+import {createEd25519PeerId} from '@libp2p/peer-id-factory'
+import {peerIdFromBytes,peerIdFromPeerId} from '@libp2p/peer-id'
+import {FULA_NODES, IPFS_HTTP, LIBP2P_PATH} from "./const.js";
+import {TCP} from '@libp2p/tcp'
+import {WebSockets} from '@libp2p/websockets'
 
 const getPeerId = async () => {
     if (fs.existsSync(LIBP2P_PATH + '/identity.json')) {
-        const identity = JSON.parse(fs.readFileSync(LIBP2P_PATH + '/identity.json'));
-        return await peerId.createFromJSON(identity)
+        const buf = fs.readFileSync(LIBP2P_PATH + '/identity.json')
+        return peerIdFromBytes(buf)
     } else {
-        const identity = await peerId.create()
-        fs.writeFileSync(LIBP2P_PATH + '/identity.json', JSON.stringify(identity.toJSON()))
+        const identity = peerIdFromPeerId(await createEd25519PeerId())
+        fs.writeFileSync(LIBP2P_PATH + '/identity.json', identity.toBytes())
         return identity
     }
 
@@ -30,10 +31,10 @@ const getNetSecret = ()=> {
     }
     console.log("Private Mode Enabled")
     const key = fs.readFileSync(config.get("network.key_path"))
-    return new Protector(key)
+    return new PreSharedKeyConnectionProtector({psk:key})
 }
 export const netSecret = getNetSecret()
-export const listen = config.get("network.listen")
+export const listen : Array<string> = config.get("network.listen")
 
 new Noise();
 
@@ -44,7 +45,7 @@ export const libConfig = async (config: Partial<Libp2pOptions>): Promise<Libp2pO
             listen
         },
         modules: {
-            transport: [WebRTCStar, TCP, WS],
+            transport: [WebRTCStar, TCP, WebSockets],
             streamMuxer: [Mplex],
             connEncryption: [NOISE],
             peerDiscovery: [Bootstrap],
@@ -59,7 +60,7 @@ export const libConfig = async (config: Partial<Libp2pOptions>): Promise<Libp2pO
             },
             peerDiscovery: {
                 autoDial: true,
-                [WebRTCStar.tag]: {
+                [WebRTCStar.prototype[Symbol.toStringTag]]: {
                     enabled: false,
                 },
                 [Bootstrap.tag]: {

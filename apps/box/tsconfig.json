@@ -1,24 +1,40 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "commonjs",
-    "moduleResolution": "Node",
-    "lib": ["es2019", "dom"],
-    "allowJs": true,
-    "outDir": "build/",
-    "sourceMap": false,
     "strict": true,
+    // project options
+    "outDir": "dist",
+    "allowJs": true,
+    "checkJs": true,
+    "target": "ES2020",
+    "module": "nodenext",
+    "lib": ["ES2021", "ES2021.Promise", "ES2021.String", "ES2020.BigInt", "DOM", "DOM.Iterable"],
+    "noEmit": false,
+    "noEmitOnError": true,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "composite": true,
+    "isolatedModules": true,
+    "removeComments": false,
+    "sourceMap": true,
     "noImplicitAny": false,
+
+    // module resolution
     "esModuleInterop": true,
-    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    // linter checks
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    // advanced
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "rootDir": "./src",
-    "baseUrl": "./src"
+    "stripInternal": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src/",
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }

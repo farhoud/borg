@@ -6,13 +6,12 @@ import {
   Request,
   setSubscriptionQueryResolutionMethod
 } from "@functionland/graph-protocol";
-import {createResolver} from "./gql-engine/orbit/orbit-resolvers";
-import {executeAndSelect} from "./gql-engine";
+import {createResolver} from "./gql-engine/orbit/orbit-resolvers.js";
+import {executeAndSelect} from "./gql-engine/index.js";
 import {parse} from "graphql";
 import {iterateLater, toAsyncIterable} from "async-later";
-import {ORBITDB_PATH} from "../const";
+import {ORBITDB_PATH} from "../const.js";
 import OrbitDB from 'orbit-db';
-import * as IPFS from "ipfs";
 import {resolveLater} from "async-later";
 
 
@@ -28,7 +27,7 @@ export async function getOrbitDb() {
 }
 
 export const registerGraph = async (libp2pNode, ipfsNode) => {
-  libp2pNode.handle(PROTOCOL, handler);
+  await libp2pNode.handle(PROTOCOL, handler);
 
   const orbitDBNode = await OrbitDB.createInstance(ipfsNode, {directory: ORBITDB_PATH})
   resolveOrbitDB(orbitDBNode)
@@ -113,6 +112,7 @@ export const registerGraph = async (libp2pNode, ipfsNode) => {
 
   })
 
+  // @ts-ignore
   setSubscriptionQueryResolutionMethod(async function* (req: Request) {
     try{
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -130,6 +130,9 @@ export const registerGraph = async (libp2pNode, ipfsNode) => {
       yield bytes
 
       for await (const res of values) {
+        if(typeof res !== "string"){
+          break;
+        }
         const s = Result.fromJson(res)
         const bytes = Result.toBinary(s)
 
