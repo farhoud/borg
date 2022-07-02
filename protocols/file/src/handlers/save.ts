@@ -14,21 +14,17 @@ export const incomingFiles = new Subject<{
     declareId(id: string): void;
 }>();
 
-
-//TODO: Too hard to understand and the bytes is not real AsyncIterable it has size of 1 always.
 export async function save({ meta, bytes }: { meta: Meta, bytes: AsyncIterable<Uint8Array> }) {
     const [promiseId, declareId] = resolveLater<string>();
     const content = new Subject<Uint8Array>();
-    incomingFiles.next({meta, getContent: () => toAsyncIterable(content), declareId});
+    incomingFiles.next({ meta, getContent: () => toAsyncIterable(content), declareId });
     await pipeline(
-      () => bytes,
-      map(message => content.next(message)),
-      consume
+        () => bytes,
+        map(message => content.next(message)),
+        consume
     );
     content.complete();
-    const cid = await promiseId
-    const uint8array = new TextEncoder().encode(cid);
-    return toAsyncIterable([uint8array]);
+    return toAsyncIterable(promiseId);
 }
 
 export async function sendFile({ connection, file, symKey = Uint8Array.from([]), iv = Uint8Array.from([]) }: {
@@ -81,14 +77,14 @@ export async function sendFile({ connection, file, symKey = Uint8Array.from([]),
 
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     return pipe(streamSendFile, connection.stream as it.Duplex<any>, async function (source: it.Source<any>) {
-        let response: Uint8Array | undefined = undefined;
+        let response: string | undefined = undefined;
         for await (const message of source) {
-            response = message; // id
+            response = String(message); // id
         }
         if (response === undefined) {
             throw Error()
         }
-        return new TextDecoder().decode(response)
+        return response
     });
 
 }
@@ -121,15 +117,14 @@ export async function streamFile({ connection, source, meta }: {
     };
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     return pipe(streamSendFile, connection.stream as it.Duplex<any>, async function (_source: any) {
-        let response: Uint8Array | undefined = undefined;
+        let response: string | undefined = undefined;
         for await (const message of _source) {
-            response = message; // id
+            response = String(message); // id
         }
         if (response === undefined) {
             throw Error()
         }
-
-        return new TextDecoder().decode(response)
+        return response
     });
 
 }

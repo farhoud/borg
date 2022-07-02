@@ -4,8 +4,5 @@
   },
   "ipfs": {
     "http": "FULA_IPFS_HTTP"
-  },
-  "cluster": {
-    "proxy": "FULA_CLUSTER_PROXY"
   }
 }

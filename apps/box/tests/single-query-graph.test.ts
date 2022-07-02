@@ -1,5 +1,5 @@
 import test from 'tape';
-import {getLibp2p} from '../src/app';
+import {app, getLibp2p, getIPFS} from '../src/app';
 import {getOrbitDb} from "../src/graph";
 import {connect, createClient} from "./helper";
 import {PROTOCOL, submitQuery, Request, Result} from "@functionland/graph-protocol";
@@ -32,9 +32,11 @@ const TEST = {
 
 test('Test single graphql operation', async function (t) {
     t.plan(3)
+    const p = await app();
     const clientNode = await createClient();
     try {
         const node = await getLibp2p();
+        const ipfs = await getIPFS();
         const orbitDB = await getOrbitDb();
         const db = await orbitDB.docs(CNAME);
         await db.load();
@@ -42,6 +44,8 @@ test('Test single graphql operation', async function (t) {
         await db.load();
 
         t.pass(`loaded orbit-db docs with name ${CNAME}`)
+
+        //Connect Client node to Box
 
         const conn = await connect(clientNode, node);
         t.pass('connected')
@@ -66,7 +70,13 @@ test('Test single graphql operation', async function (t) {
         t.end(error);
     }
 
+    t.teardown(async () => {
+        await p.stop()
+        await clientNode.stop()
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 10000));
     t.end()
 });
 
-
+test.onFinish (() => {process.exit (0)})
