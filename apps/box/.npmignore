@@ -1,5 +1,4 @@
 *
 !dist/**/*
-dist/test
 !cli.js
 !config/**/*
